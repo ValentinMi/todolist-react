@@ -1,32 +1,43 @@
 import React, { useState, useEffect } from "react";
 import useLocalStorage from "../../hooks/useLocalStorage";
+
 import Task from "../Task";
 import TaskForm from "../TaskForm";
 
 const TodoList = () => {
-  const [tasks, setTasks] = useState([{ name: "Faire les courses" }]);
-  const [saveData, getData, removeData] = useLocalStorage("todos", tasks);
+  const [todos, setTodos] = useState([]);
+  const [saveData, getData, removeData] = useLocalStorage("todos", todos);
 
   useEffect(() => {
     if (getData() === null) {
-      saveData(tasks);
-    } else setTasks(getData);
+      saveData(todos);
+    } else setTodos(getData());
   }, []);
 
   useEffect(() => {
-    saveData(tasks);
-  }, [tasks, saveData]);
+    saveData(todos);
+  }, [todos, saveData]);
 
-  const handleAddTask = newTask => {
-    let newTasks = [...tasks];
-    newTasks.push(newTask);
-    setTasks(newTasks);
+  const handleAddTask = newTodo => {
+    // Check if todo do not already exist
+    if (todos.find(t => t.name === newTodo.name) !== undefined) return;
+    let newTodos = [...todos];
+    newTodos.push(newTodo);
+    setTodos(newTodos);
   };
 
   const handleRemoveTask = taskIndex => {
-    let newTasks = [...tasks];
-    newTasks = newTasks.filter(t => t !== tasks[taskIndex]);
-    setTasks(newTasks);
+    let newTodos = [...todos];
+    newTodos = newTodos.filter(t => t !== todos[taskIndex]);
+    setTodos(newTodos);
+  };
+
+  const handleComplete = (taskIndex, bool) => {
+    let newTask = todos[taskIndex];
+    let newTodos = [...todos];
+    newTask.isComplete = bool;
+    newTodos[taskIndex] = newTask;
+    setTodos(newTodos);
   };
 
   return (
@@ -37,16 +48,18 @@ const TodoList = () => {
       <div>
         <h1>Ma TodoList</h1>
         <ol>
-          {tasks.map((task, index) => (
+          {todos.map((task, index) => (
             <Task
               key={task.name}
               index={index}
               task={task}
               removeTask={handleRemoveTask}
+              handleComplete={handleComplete}
             />
           ))}
         </ol>
       </div>
+      <button onClick={() => setTodos([])}>Clear list</button>
     </>
   );
 };
